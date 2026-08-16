@@ -1108,6 +1108,9 @@ document.addEventListener('touchstart', ensureAudioUnlocked, { once: true });
 
 loadData();
 setInterval(tick, 1000);
+setInterval(async ()=>{
+  if(gsheetUrl) await loadData();
+}, 30000);
 </script>
 </body>
 </html>
