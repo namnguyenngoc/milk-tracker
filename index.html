@@ -399,6 +399,7 @@
     <div class="test-row">
       <button class="btn-test" id="gsheetSaveBtn">💾 Lưu URL</button>
       <button class="btn-test" id="gsheetSyncBtn">🔄 Đồng bộ ngay</button>
+      <button class="btn-test" id="gsheetReloadBtn">🔃 Tải lại dữ liệu</button>
     </div>
   </div>
 
@@ -513,6 +514,7 @@ let alarmPlaying = false;
 let testOverrideNextTime = null;
 let customReminders = []; // {id, time:"HH:mm", note, repeatDaily, lastFiredKey}
 let firingCustomAlarm = null; // reminder currently ringing
+const HARDCODED_GSHEET_URL = 'https://script.google.com/macros/s/AKfycbxasm_iuM8CQTByYHrc1LOtJKbLa63tq6e2JnFn5PL70Cpu26Zc4gHzZK1NKv9ceckNwQ/exec';
 let gsheetUrl = null;
 const GSHEET_CONFIG_KEY = 'gsheetConfig';
 
@@ -653,9 +655,11 @@ async function loadGsheetConfig(){
     const raw = await storageAdapter.get(GSHEET_CONFIG_KEY);
     if(raw){
       const cfg = JSON.parse(raw);
-      gsheetUrl = cfg.url || null;
+      gsheetUrl = cfg.url || HARDCODED_GSHEET_URL;
+    } else {
+      gsheetUrl = HARDCODED_GSHEET_URL;
     }
-  }catch(e){ gsheetUrl = null; }
+  }catch(e){ gsheetUrl = HARDCODED_GSHEET_URL; }
   if($('gsheetUrlInput')) $('gsheetUrlInput').value = gsheetUrl || '';
   if(gsheetUrl){
     setGsheetStatus('checking');
@@ -1074,6 +1078,19 @@ $('gsheetSyncBtn').addEventListener('click', async ()=>{
   const ok = await gsheetPing();
   setGsheetStatus(ok ? 'connected' : 'error');
   showSyncNotice(ok, ok ? undefined : 'Đồng bộ thất bại, đang dùng dữ liệu cục bộ');
+});
+
+$('gsheetReloadBtn').addEventListener('click', async ()=>{
+  if(!gsheetUrl){
+    showSyncNotice(false, 'Chưa có URL backend — hãy lưu URL trước');
+    return;
+  }
+  setGsheetStatus('checking');
+  await loadData();
+  render();
+  const ok = await gsheetPing();
+  setGsheetStatus(ok ? 'connected' : 'error');
+  showSyncNotice(ok, ok ? undefined : 'Tải lại thất bại, đang dùng dữ liệu cục bộ');
 });
 
 $('intervalInput').addEventListener('change', async (e)=>{
