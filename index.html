@@ -1111,6 +1111,13 @@ setInterval(tick, 1000);
 setInterval(async ()=>{
   if(gsheetUrl) await loadData();
 }, 30000);
+
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState === 'visible') loadData();
+});
+window.addEventListener('pageshow', (e)=>{
+  if(e.persisted) loadData();
+});
 </script>
 </body>
 </html>
